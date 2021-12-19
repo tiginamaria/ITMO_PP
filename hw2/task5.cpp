@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
     double time_start, time_finish;
     int len, rank, n, i, message;
-    char *name = new char();
+    char *name = new char[100];
     MPI_Init(&argc, &argv);
     MPI_Status status;
     MPI_Comm_size(MPI_COMM_WORLD, &n);
