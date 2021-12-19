@@ -15,10 +15,13 @@ int main(int argc, char **argv)
     time_start = MPI_Wtime();
     for (i = 0; i < NTIMES; i++) {
         if (rank == 1) {
-            cout << "Hello from process " << rank << "\n";
-            for (i = 1; i < n; i++) {
+            // cout << "Hello from process " << rank << "\n";
+            for (i = 0; i < n; i++) {
+                if (i == rank) {
+                    continue;
+                }
                 MPI_Recv(&message, 1, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-                cout << "Hello from process " << message << endl;
+                // cout << "Hello from process " << message << endl;
             }
         } else MPI_Send(&rank, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
     }
