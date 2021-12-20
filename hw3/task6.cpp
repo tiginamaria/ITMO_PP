@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
             MPI_Recv(&rbuf, 1, MPI_FLOAT, 2, 2, MPI_COMM_WORLD, &status);
             cout << "Process 0 recv " << ibuf << " from process 1, " << rbuf << "from process 2\n";
         } else if (status.MPI_TAG == 2) {
-            MPI_Recv(&rbuf, 1, MPI_FLOAT, 2, 3, MPI_COMM_WORLD, &status);
+            MPI_Recv(&rbuf, 1, MPI_FLOAT, 2, 2, MPI_COMM_WORLD, &status);
             MPI_Recv(&ibuf, 1, MPI_INT, 1, 1, MPI_COMM_WORLD, &status);
             cout << "Process 0 recv " << rbuf << " from process 2, " << ibuf << "from process 1\n";
         }
