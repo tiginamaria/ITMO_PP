@@ -5,7 +5,7 @@
 using namespace std;
 
 int const NSIZE = 1000000;
-int const NTIMES = 50;
+int const NTIMES = 10;
 
 int main(int argc, char **argv) {
     int rank, size, sum, tmp_sum;
@@ -20,8 +20,8 @@ int main(int argc, char **argv) {
     vector<int> a;
 
     time_start = MPI_Wtime();
-
     for (int k = 0; k < NTIMES; ++k) {
+        sum = 0;
 
         if (rank == 0) {
 //            cout << "batch_size: " << batch_size << '\n';
@@ -52,30 +52,19 @@ int main(int argc, char **argv) {
             MPI_Recv(&a[0], batch_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         }
 
-        sum = 0;
+        tmp_sum = 0;
         for (int i = 0; i < batch_size; ++i) {
-            sum += a[i];
+            tmp_sum += a[i];
         }
 
-        for (int i = 1; i < NSIZE; i *= 2) {
-            if (rank % (2 * i) == 0 && rank + i < size) {
-//                cout << "process " << rank << " receiving from process " << rank + i << '\n';
-                MPI_Recv(&tmp_sum, 1, MPI_INT, rank + i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-                sum += tmp_sum;
-//                cout << "process " << rank << " successfully received from process " << rank + i << '\n';
-            } else if (rank % (2 * i) == i) {
-//                cout << "process " << rank << " sending to process " << rank - i << '\n';
-                MPI_Send(&sum, 1, MPI_INT, rank - i, 0, MPI_COMM_WORLD);
-//                cout << "process " << rank << " successfully sent to process " << rank + i << '\n';
-            }
-        }
+        MPI_Reduce(&tmp_sum, &sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
         if (rank == 0) {
 //            cout << "sum is " << sum << '\n';
         }
     }
-
+    time_finish = MPI_Wtime();
     if (rank == 0) {
-        time_finish = MPI_Wtime();
         cout << size << ' ' << (time_finish - time_start) / NTIMES << '\n';
     }
 
