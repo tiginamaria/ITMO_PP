@@ -37,13 +37,12 @@ void delete_file(string filename) {
 }
 
 int main(int argc, char **argv) {
-    int bufsize, num, sum, rank;
+    int rank;
     MPI_Init(&argc, &argv);
-    MPI_Status status;
     MPI_File fh;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    char buf[BUFSIZE];
+    char buf[BUFSIZE + 1] = {0};
     string filename = "file.txt";
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     if (rank == 0) {
         printf("create file: %s size:%d\n", filename.c_str(), STRSIZE);
@@ -52,22 +51,10 @@ int main(int argc, char **argv) {
 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_File_open(MPI_COMM_WORLD, filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
-    MPI_File_set_view(fh, 0, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL);
-    sum = 0;
-    do {
-        MPI_File_read(fh, buf, BUFSIZE, MPI_CHAR, &status);
-        MPI_Get_count(&status, MPI_CHAR, &num);
-        printf("buf=%s\n", buf);
-        sum += num;
-    } while (num >= BUFSIZE);
+    MPI_File_set_view(fh, rank * BUFSIZE, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL);
+    MPI_File_read_all(fh, buf, BUFSIZE, MPI_CHAR, MPI_STATUS_IGNORE);
+    printf("process %d, size=%d, buf=%s\n", rank, strlen(buf), buf);
+
     MPI_File_close(&fh);
-    cout << "read symbols: " << sum << '\n';
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    if (rank == 0 && argc > 1 && strcmp(argv[1], "delete") == 0) {
-        cout << "delete file: " << filename << '\n';
-        delete_file(filename);
-    }
-
     MPI_Finalize();
 }
